@@ -1,0 +1,41 @@
+pipeline{
+     agent any
+     
+
+     stages{
+          stage(checkout){
+               steps{
+                 git branch: 'main', url: 'https://github.com/shrutikasorte/maven-app.git'
+               }
+          }
+          stage(build){
+               steps{
+                 script {
+                     sh 'mvn clean package'
+                 }
+               }
+          }
+           stage(image){
+               steps{
+                 script {
+                     sh 'docker build -t myimage .'
+                 }
+               }
+          }
+          stage(push){
+               steps{
+                 script {
+                     sh ''' 
+                     aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 904300192549.dkr.ecr.ap-south-1.amazonaws.com
+                     docker tag myimage:latest 904300192549.dkr.ecr.ap-south-1.amazonaws.com/myrepo:latest
+                     docker push 904300192549.dkr.ecr.ap-south-1.amazonaws.com/myrepo:latest
+                     '''
+                 }
+               }
+          }
+          
+          
+
+          
+     }
+}
